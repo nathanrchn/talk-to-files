@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import NextTopLoader from "nextjs-toploader";
 import { GeistSans } from "geist/font/sans";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
 
 // const fontSans = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const fontSans = GeistSans;
@@ -34,6 +35,7 @@ export default function RootLayout({
         >
           {children}
         </ThemeProvider>
+        <Toaster />
         <NextTopLoader color="black" showSpinner={false} />
       </body>
     </html>

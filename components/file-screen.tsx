@@ -3,10 +3,11 @@ import { readTextFile } from "@tauri-apps/api/fs";
 import { useRef, useState } from "react";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
-import { ListCollapse, SquarePlus } from "lucide-react";
+import { ListCollapse, Loader2, SquarePlus } from "lucide-react";
 import { invoke } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/dialog";
 import { FilesTable } from "./ui/datatable";
+import { useToast } from "./ui/use-toast";
 
 const example = `
 L'AVARE
@@ -252,7 +253,9 @@ donniez pas la peine de me le dire ? car enfin mon amour ne veut rien
 export default function FilesScreen(
   { DB, reloadDB }: { DB: string[]; reloadDB: () => void },
 ) {
-  const [text, setText] = useState("");
+  const [text, setText] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const { toast } = useToast();
 
   const readFileContents = async () => {
     try {
@@ -272,24 +275,45 @@ export default function FilesScreen(
     }
   };
 
-  const splitStringIntoWordChunks = (str: string, chunkSize: number): string[] => {
-    const cleanedStr = str.trim().replace(/\s+/g, ' '); // remove extra whitespace
-    const words = cleanedStr.split(' '); // split string into words
-    const chunks = Array.from({ length: Math.ceil(words.length / chunkSize) }, (_, i) => {
-      const start = i * chunkSize;
-      return words.slice(start, start + chunkSize);
-    });
-    return chunks.map((chunk) => chunk.join(' '));
-  }
+  const splitStringIntoWordChunks = (
+    str: string,
+    chunkSize: number,
+  ): string[] => {
+    const cleanedStr = str.trim().replace(/\s+/g, " "); // remove extra whitespace
+    const words = cleanedStr.split(" "); // split string into words
+    const chunks = Array.from(
+      { length: Math.ceil(words.length / chunkSize) },
+      (_, i) => {
+        const start = i * chunkSize;
+        return words.slice(start, start + chunkSize);
+      },
+    );
+    return chunks.map((chunk) => chunk.join(" "));
+  };
 
   const textEmbedding = async () => {
+    setLoading(true);
+
     const chunkSize = 256;
+    const chunks = splitStringIntoWordChunks(text, chunkSize);
+    splitStringIntoWordChunks(text, chunkSize);
+
+    toast({
+      title: "Started embedding your files...",
+      description: `Your documents will be splited in ${chunks.length} chunks.`,
+    });
 
     await invoke("generate_embeddings", {
-      sentences: splitStringIntoWordChunks(text, chunkSize),
+      sentences: chunks,
     });
 
     reloadDB();
+    setLoading(false);
+    toast({
+      title: "Embeddings done !",
+      description:
+        `Your documents are now embedded, the database has been reloaded.`,
+    });
   };
 
   return (
@@ -301,8 +325,15 @@ export default function FilesScreen(
         placeholder="Enter some text that will be used to create you database"
       />
       <div className="flex flex-row w-full justify-center space-x-4 my-4">
-        <Button variant="secondary" className="w-full" onClick={textEmbedding}>
-          <SquarePlus className="h-4 w-4 mr-2 text-muted-foreground" />
+        <Button
+          variant="secondary"
+          className="w-full"
+          onClick={textEmbedding}
+          disabled={loading}
+        >
+          {loading
+            ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            : <SquarePlus className="h-4 w-4 mr-2 text-muted-foreground" />}
           <p className="text-muted-foreground">Add to the database</p>
         </Button>
         <Button
