@@ -18,8 +18,6 @@ pub struct BertInferenceModel {
 
 impl BertInferenceModel {
     pub fn load(
-        _model_name: &str,
-        _revision: &str,
         embeddings_filename: &str,
         embeddings_key: &str,
     ) -> anyhow::Result<Self> {
