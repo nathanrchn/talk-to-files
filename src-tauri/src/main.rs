@@ -12,15 +12,22 @@ use model::BertInferenceModel;
 
 use candle::Tensor;
 use rayon::prelude::*;
-use serde::{Serialize};
+use serde::{Serialize, Deserialize};
 use std::fs::File;
 use std::sync::Arc;
 use std::path::Path;
 use std::fs;
+use bincode::{Decode, Encode};
 
 #[derive(Serialize)]
 struct ResPayload {
   text: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Encode, Decode)]
+struct TextInfo {
+    content: String,
+    path: String,
 }
 
 #[tauri::command]
@@ -31,16 +38,14 @@ async fn query_db(app_handle: tauri::AppHandle, text: String, num_results: u32) 
     let binding = Path::new(app_data_dir).join("embeddings.bin");
     let filename = binding.to_str().unwrap();
     let embedding_key = "my_embedding";
-    let bert_model = BertInferenceModel::load(
-        "",
-        "",
+    let bert_model = BertInferenceModel::load(        
         filename,
         embedding_key,
     ).map_err(|_|())?;
 
     let text_map_path = Path::new(app_data_dir).join("text_map.bin");
     let mut text_map_file = File::open(text_map_path).unwrap();
-    let text_map: Vec<String> = bincode::decode_from_std_read(
+    let text_map: Vec<TextInfo> = bincode::decode_from_std_read(
         &mut text_map_file,
         bincode::config::standard(),
     ).map_err(|_|())?;
@@ -60,10 +65,11 @@ async fn query_db(app_handle: tauri::AppHandle, text: String, num_results: u32) 
     let results: Vec<String> = results
         .into_iter()
         .map(|r| {
-            let top_item_text = model_ctx.1.get(r.0).unwrap();
+            let top_item_text = &model_ctx.1[r.0].content;
+            let top_item_path = &model_ctx.1[r.0].path;
             format!(
-                "{}|{:?}|{}",
-                r.0, r.1, top_item_text
+                "{}|{:?}|{}|{}",
+                r.0, r.1, top_item_path, top_item_text
             )
         })
         .collect();
@@ -72,12 +78,12 @@ async fn query_db(app_handle: tauri::AppHandle, text: String, num_results: u32) 
 }
 
 #[tauri::command]
-fn get_db(app_handle: tauri::AppHandle) -> Result<Vec<String>, ()> {
+fn get_db(app_handle: tauri::AppHandle) -> Result<Vec<TextInfo>, ()> {
   let binding = app_handle.path_resolver().app_data_dir().unwrap();
   let app_data_dir = binding.to_str().unwrap();
   let text_map_path = Path::new(app_data_dir).join("text_map.bin");
   let mut text_map_file = File::open(text_map_path).unwrap();
-  let text_map: Vec<String> = bincode::decode_from_std_read(
+  let text_map: Vec<TextInfo> = bincode::decode_from_std_read(
         &mut text_map_file,
         bincode::config::standard(),
   ).map_err(|_|())?;
@@ -86,7 +92,7 @@ fn get_db(app_handle: tauri::AppHandle) -> Result<Vec<String>, ()> {
 }
 
 #[tauri::command]
-async fn generate_embeddings(app_handle: tauri::AppHandle, sentences: Vec<String>) {
+async fn generate_embeddings(app_handle: tauri::AppHandle, text_infos: Vec<TextInfo>) {
   let binding = app_handle.path_resolver().app_data_dir().unwrap();
   let app_data_dir = binding.to_str().unwrap();
 
@@ -102,18 +108,18 @@ async fn generate_embeddings(app_handle: tauri::AppHandle, sentences: Vec<String
   }
 
   let mut file = std::fs::File::create(text_map_path).unwrap();
-  bincode::encode_into_std_write(&sentences, &mut file, bincode::config::standard())
+  bincode::encode_into_std_write(&text_infos, &mut file, bincode::config::standard())
       .expect("failed to encode sentences");
   println!("text_map serialized to text_map.bin");
 
-  let bert_model = BertInferenceModel::load(
-      "",
-      "",
+  let bert_model = BertInferenceModel::load(      
       "",
       "",
   )
   .unwrap();
   println!("bert model loaded");
+
+  let sentences: Vec<String> = text_infos.into_iter().map(|info| info.content).collect();
   
   // try to do this in parallel using rayon
   let results: Vec<Result<Tensor, _>> = sentences
@@ -140,7 +146,7 @@ async fn generate_embeddings(app_handle: tauri::AppHandle, sentences: Vec<String
 }
 
 fn main() {
-  tauri::Builder::default()
+  tauri::Builder::default()  
     .invoke_handler(tauri::generate_handler![generate_embeddings, query_db, get_db])    
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

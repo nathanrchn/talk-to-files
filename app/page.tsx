@@ -15,14 +15,14 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { Badge } from "@/components/ui/badge";
 import SearchScreen from "@/components/search-screen";
 import FilesScreen from "@/components/file-screen";
-import { ResponseDoc } from "@/lib/types/types";
+import { DocFromDb } from "@/lib/types/types";
 
 export default function Page() {
   const { setTheme } = useTheme();
-  const [DB, setDB] = useState<string[]>([]);
+  const [DB, setDB] = useState<DocFromDb[]>([]);
 
   const reloadDB = () => {
-    invoke("get_db").then((res: any) => {
+    invoke("get_db").then((res: any) => {      
       setDB(res);
     });
   }

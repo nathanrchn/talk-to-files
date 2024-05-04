@@ -1,6 +1,5 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
+import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
 import NextTopLoader from "nextjs-toploader";
 import { GeistSans } from "geist/font/sans";
@@ -22,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head />
+      <head></head>
       <body className={cn(
         "min-h-screen bg-background font-sans antialiased",
         fontSans.variable
