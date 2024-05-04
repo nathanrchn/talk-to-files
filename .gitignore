@@ -1,0 +1,28 @@
+# Dependency directories
+node_modules/
+
+# Build artifacts
+dist/
+build/
+.next/
+
+# Tauri specific
+target/
+
+# Environment variables
+.env
+
+# Log files and databases
+*.log
+*.sqlite3
+*.sqlite
+
+# Editor/IDE files
+.vscode/
+.idea/
+*.sublime-workspace
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
