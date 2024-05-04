@@ -31,6 +31,14 @@ struct TextInfo {
 }
 
 #[tauri::command]
+fn open_finder(path: String) {
+  std::process::Command::new( "open" )
+        .args(["-R", &path])
+        .spawn()
+        .unwrap();
+}
+
+#[tauri::command]
 async fn query_db(app_handle: tauri::AppHandle, text: String, num_results: u32) -> Result<Vec<String>, ()> {
     let binding = app_handle.path_resolver().app_data_dir().unwrap();
     let app_data_dir = binding.to_str().unwrap();
@@ -147,7 +155,7 @@ async fn generate_embeddings(app_handle: tauri::AppHandle, text_infos: Vec<TextI
 
 fn main() {
   tauri::Builder::default()  
-    .invoke_handler(tauri::generate_handler![generate_embeddings, query_db, get_db])    
+    .invoke_handler(tauri::generate_handler![generate_embeddings, query_db, get_db, open_finder])    
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

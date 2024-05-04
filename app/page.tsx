@@ -16,6 +16,8 @@ import { Badge } from "@/components/ui/badge";
 import SearchScreen from "@/components/search-screen";
 import FilesScreen from "@/components/file-screen";
 import { DocFromDb } from "@/lib/types/types";
+import { BaseDirectory, createDir, exists } from "@tauri-apps/api/fs";
+import { appDataDir } from '@tauri-apps/api/path';
 
 export default function Page() {
   const { setTheme } = useTheme();
@@ -28,21 +30,22 @@ export default function Page() {
   }
 
   useEffect(() => {   
-    reloadDB();
-    // const checkIfCreated = async () => {
-    //   try {
-    //     const created = await exists("text_map.bin", {
-    //       dir: BaseDirectory.AppData,
-    //     });
-    //     if (!created) {
-    //       await createDir(await appDataDir());
-    //     } else {
-    //     }
-    //   } catch (error) {
-    //     console.log("failed loadig file", error);
-    //   }
-    // };
-    // checkIfCreated();
+    
+    const checkIfCreated = async () => {
+      try {
+        const created = await exists("text_map.bin", {
+          dir: BaseDirectory.AppData,
+        });
+        if (!created) {
+          await createDir(await appDataDir());
+        } else {
+          reloadDB();
+        }
+      } catch (error) {
+        console.log("failed loadig file", error);
+      }
+    };
+    checkIfCreated();
   }, []);
 
   return (

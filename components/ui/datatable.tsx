@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "./table";
+import { DropdownMenu } from "./dropdown-menu";
 
 export function FilesTable({ DB }: { DB: DocFromDb[] }) {
   return (
@@ -34,7 +35,9 @@ export function FilesTable({ DB }: { DB: DocFromDb[] }) {
                 {file.content}
               </TableCell>
               <TableCell>
-                ...
+                <DropdownMenu>
+                    
+                </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}
