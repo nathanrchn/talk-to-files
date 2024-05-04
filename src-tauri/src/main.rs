@@ -14,6 +14,7 @@ use candle::Tensor;
 use rayon::prelude::*;
 use serde::{Serialize, Deserialize};
 use std::fs::File;
+use std::io::Write;
 use std::sync::Arc;
 use std::path::Path;
 use std::fs;
@@ -36,6 +37,35 @@ fn open_finder(path: String) {
         .args(["-R", &path])
         .spawn()
         .unwrap();
+}
+
+#[tauri::command]
+fn delete_db(app_handle: tauri::AppHandle) {
+  let binding = app_handle.path_resolver().app_data_dir().unwrap();
+  let app_data_dir = binding.to_str().unwrap();
+  let text_map_path = Path::new(app_data_dir).join("text_map.bin");
+
+  if text_map_path.exists() {
+    let mut file = File::create(text_map_path).expect("Failed to create text_map.bin file");
+    file.write_all(b"{}").expect("Failed to write initial data to text_map.bin file");
+  }
+}
+
+#[tauri::command]
+fn is_db_created(app_handle: tauri::AppHandle) {
+  let binding = app_handle.path_resolver().app_data_dir().unwrap();
+  let app_data_dir = binding.to_str().unwrap();
+  let path = Path::new(app_data_dir);
+
+  if !path.exists() {
+    fs::create_dir_all(path).expect("Failed to create app_data_dir directory");
+  }
+
+  let text_map_path = path.join("text_map.bin");
+  if !text_map_path.exists() {
+    let mut file = File::create(text_map_path).expect("Failed to create text_map.bin file");
+    file.write_all(b"{}").expect("Failed to write initial data to text_map.bin file");
+  }
 }
 
 #[tauri::command]
@@ -94,7 +124,7 @@ fn get_db(app_handle: tauri::AppHandle) -> Result<Vec<TextInfo>, ()> {
   let text_map: Vec<TextInfo> = bincode::decode_from_std_read(
         &mut text_map_file,
         bincode::config::standard(),
-  ).map_err(|_|())?;
+  ).unwrap_or_default();
 
   Ok(text_map)
 }
@@ -155,7 +185,7 @@ async fn generate_embeddings(app_handle: tauri::AppHandle, text_infos: Vec<TextI
 
 fn main() {
   tauri::Builder::default()  
-    .invoke_handler(tauri::generate_handler![generate_embeddings, query_db, get_db, open_finder])    
+    .invoke_handler(tauri::generate_handler![generate_embeddings, query_db, get_db, open_finder, is_db_created, delete_db])    
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

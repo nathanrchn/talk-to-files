@@ -123,17 +123,16 @@ export default function FilesScreen(
                 </Button>
                 <Button
                     variant="outline"                    
-                    onClick={notImlementedYet}
-                    disabled={loading}
-                >
-                    {loading
-                        ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        : <RefreshCcw className="h-4 w-4 mr-2 text-muted-foreground" />}
-                        <p className="text-muted-foreground">Reload db</p>                 
-                </Button>
-                <Button
-                    variant="outline"                    
-                    onClick={notImlementedYet}
+                    onClick={async () => {
+                        await invoke("delete_db");
+                        reloadDB();
+
+                        toast({
+                            title: "DB deleted !",
+                            description:
+                              `Your DB got successfully deleted`,
+                          });
+                    }}
                     disabled={loading}
                 >
                     {loading
