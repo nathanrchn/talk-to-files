@@ -1,3 +1,5 @@
+"use client";
+
 import { DocFromDb, ResponseDoc } from "@/lib/types/types";
 import { invoke } from "@tauri-apps/api/tauri";
 import { useState } from "react";
@@ -36,7 +38,7 @@ export default function SearchScreen({ DB }: { DB: DocFromDb[] }) {
 
             setResults(formattedDocuments);
         }
-    };
+    };    
 
     return (
         <div className="w-screen h-full flex flex-col px-4 justify-center items-center space-y-4">

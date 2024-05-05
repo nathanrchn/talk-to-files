@@ -13,9 +13,8 @@ pub struct BertInferenceModel {
     model: BertModel,
     tokenizer: Tokenizer,
     device: Device,
-    embeddings: Tensor,
+    pub embeddings: Tensor,
 }
-
 impl BertInferenceModel {
     pub fn load(
         embeddings_filename: &str,
@@ -105,7 +104,6 @@ impl BertInferenceModel {
         );
         Ok(embeddings)
     }
-    
 
     pub fn score_vector_similarity(
         &self,

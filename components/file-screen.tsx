@@ -1,3 +1,5 @@
+"use client";
+
 import { DocFromDb, ResponseDoc } from "@/lib/types/types";
 import { readTextFile } from "@tauri-apps/api/fs";
 import { useRef, useState } from "react";

@@ -23,7 +23,7 @@ export default function Page() {
 
   const reloadDB = () => {
     invoke("get_db").then((res: any) => {
-      if (res) {
+      if (res) {        
         setDB(res);
       }
     }).catch(() => {
@@ -32,8 +32,10 @@ export default function Page() {
     });
   }
 
-  useEffect(() => {    
+  useEffect(() => {
+    console.log(window);
     const createAppDataDir = async () => {
+      if (typeof window === 'undefined') return;          
       await invoke("is_db_created");
       reloadDB();
     }
