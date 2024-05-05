@@ -1,10 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    output: "export",
     reactStrictMode: true,
-    experimental: {
-        serverComponentsExternalPackages: ['sharp', 'onnxruntime-node'],
-    },
+    swcMinify: true,    
+    output: "export",
+    distDir: "dist",
+    // experimental: {
+        // serverComponentsExternalPackages: ['sharp', 'onnxruntime-node'],        
+    // },
+    // transpilePackages: ["@tauri-apps/app"]
 };
 
 export default nextConfig;

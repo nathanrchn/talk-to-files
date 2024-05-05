@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
-    "beforeBuildCommand": "npm run build",
+    "beforeBuildCommand": "npm run build",    
     "beforeDevCommand": "npm run dev",
     "devPath": "http://localhost:3000",
     "distDir": "../out"
@@ -27,7 +27,10 @@
       },
       "path": {
         "all": true
-      }
+      },
+      "window": {
+        "startDragging": true
+      }    
     },
     "bundle": {
       "active": true,
@@ -44,7 +47,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "com.talk-to-files.dev",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -76,7 +79,9 @@
         "minHeight": 800,
         "resizable": true,
         "title": "talk-to-files",
-        "minWidth": 800
+        "minWidth": 800,
+        "hiddenTitle": true,
+        "titleBarStyle": "Overlay" 
       }
     ]
   }

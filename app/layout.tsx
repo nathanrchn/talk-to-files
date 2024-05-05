@@ -1,18 +1,11 @@
+"use client";
+
 import "./globals.css";
-import type { Metadata } from "next";
-import { cn } from "@/lib/utils";
-import NextTopLoader from "nextjs-toploader";
-import { GeistSans } from "geist/font/sans";
-import { ThemeProvider } from "@/components/theme-provider";
+// import { GeistSans } from "geist/font/sans";
 import { Toaster } from "@/components/ui/toaster";
 
 // const fontSans = Inter({ subsets: ["latin"], variable: "--font-sans" });
-const fontSans = GeistSans;
-
-export const metadata: Metadata = {
-  title: "Talk To Files",
-  description: "Talk to your files",
-};
+// const fontSans = GeistSans;
 
 export default function RootLayout({
   children,
@@ -21,18 +14,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head></head>
+      <head />
       <body className="min-h-screen bg-background font-sans antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+        <div data-tauri-drag-region className="h-[25px] w-screen absolute" />
+        {children}
         <Toaster />
-        <NextTopLoader color="black" showSpinner={false} />
       </body>
     </html>
   );

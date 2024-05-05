@@ -1,15 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Files, Loader2, Moon, Search, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
+import { Files, Loader2, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import { Badge } from "@/components/ui/badge";
@@ -18,13 +10,12 @@ import FilesScreen from "@/components/file-screen";
 import { DocFromDb } from "@/lib/types/types";
 
 export default function Page() {
-  const { setTheme } = useTheme();
   const [DB, setDB] = useState<DocFromDb[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   const reloadDB = () => {
     invoke("get_db").then((res: any) => {
-      if (res) {        
+      if (res) {
         setDB(res);
       }
     }).catch(() => {
@@ -33,20 +24,14 @@ export default function Page() {
     });
   }
 
-  useEffect(() => {    
-    const createAppDataDir = async () => {
-      if (typeof window === 'undefined') return;          
-      await invoke("is_db_created");
-      reloadDB();
-      setLoading(false);
-    }
-        
-    createAppDataDir();
+  const createAppDataDir = async () => {
+    await invoke("is_db_created");
+    reloadDB();
+    setLoading(false);
+  }
 
-    // avoid first load bug where db not loaded
-    document.addEventListener("DOMContentLoaded", async () => {
-      await createAppDataDir();
-    });
+  useEffect(() => {
+    createAppDataDir();
   }, []);
 
   if (loading) {
@@ -59,7 +44,7 @@ export default function Page() {
 
   return (
     <div className="">
-      <Badge variant="secondary" className="absolute left-4 top-6">
+      <Badge variant="secondary" className="absolute right-4 top-6">
         <p className="text-sm text-muted-foreground">
           {DB.length} chunks loaded
         </p>
@@ -82,29 +67,7 @@ export default function Page() {
         <TabsContent value="files" className="h-full">
           <FilesScreen DB={DB} reloadDB={reloadDB} />
         </TabsContent>
-      </Tabs>
-      <div className="absolute right-4 top-4">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon">
-              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              <span className="sr-only">Toggle theme</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setTheme("light")}>
-              Light
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("dark")}>
-              Dark
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("system")}>
-              System
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      </Tabs>      
     </div>
   );
 }
