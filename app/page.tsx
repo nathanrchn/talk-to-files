@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Files, Moon, Search, Sun } from "lucide-react";
+import { Files, Loader2, Moon, Search, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
@@ -20,30 +20,42 @@ import { DocFromDb } from "@/lib/types/types";
 export default function Page() {
   const { setTheme } = useTheme();
   const [DB, setDB] = useState<DocFromDb[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const reloadDB = () => {
-    invoke("get_db").then((res: any) => {      
-      setDB(res);
+    invoke("get_db").then((res: any) => {
+      if (res) {        
+        setDB(res);
+      }
+    }).catch(() => {
+      // we are with an empty vec
+      setDB([]);
     });
   }
 
-  useEffect(() => {   
-    reloadDB();
-    // const checkIfCreated = async () => {
-    //   try {
-    //     const created = await exists("text_map.bin", {
-    //       dir: BaseDirectory.AppData,
-    //     });
-    //     if (!created) {
-    //       await createDir(await appDataDir());
-    //     } else {
-    //     }
-    //   } catch (error) {
-    //     console.log("failed loadig file", error);
-    //   }
-    // };
-    // checkIfCreated();
+  useEffect(() => {    
+    const createAppDataDir = async () => {
+      if (typeof window === 'undefined') return;          
+      await invoke("is_db_created");
+      reloadDB();
+      setLoading(false);
+    }
+        
+    createAppDataDir();
+
+    // avoid first load bug where db not loaded
+    document.addEventListener("DOMContentLoaded", async () => {
+      await createAppDataDir();
+    });
   }, []);
+
+  if (loading) {
+    return (
+      <div className="flex h-screen w-screen justify-center items-center">
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <div className="">
