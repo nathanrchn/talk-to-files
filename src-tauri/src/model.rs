@@ -4,7 +4,8 @@ extern crate intel_mkl_src;
 #[cfg(feature = "accelerate")]
 extern crate accelerate_src;
 
-use candle::{safetensors, Device, Tensor};
+use candle::utils::metal_is_available;
+use candle::{safetensors, Device, Tensor, Result};
 use candle_nn::VarBuilder;
 use candle_transformers::models::bert::{BertModel, Config, DTYPE};
 use tokenizers::Tokenizer;
@@ -15,12 +16,21 @@ pub struct BertInferenceModel {
     device: Device,
     pub embeddings: Tensor,
 }
+
+fn device() -> Result<Device> {
+    if metal_is_available() {
+        Ok(Device::new_metal(0)?)
+    } else {
+        Ok(Device::Cpu)
+    }
+}
+
 impl BertInferenceModel {
     pub fn load(
         embeddings_filename: &str,
         embeddings_key: &str,
     ) -> anyhow::Result<Self> {
-        let device = Device::Cpu;
+        let device = device()?;
         // load the embeddings from a file
         let embeddings = match embeddings_filename.is_empty() {
             true => {
